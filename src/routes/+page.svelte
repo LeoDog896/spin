@@ -3,7 +3,9 @@
 </script>
 
 <main>
-  <h1><textarea {value}/></h1>
+  <h1><textarea {value} data-gramm="false"
+    data-gramm_editor="false"
+    data-enable-grammarly="false"/></h1>
 </main>
 
 <style>
