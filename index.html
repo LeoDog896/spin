@@ -1,14 +1,18 @@
-<script lang="ts">
-  let value = "text"
-</script>
-
 <main>
-  <h1><textarea {value} data-gramm="false"
+  <h1><textarea data-gramm="false"
     data-gramm_editor="false"
     data-enable-grammarly="false"/></h1>
 </main>
 
 <style>
+
+  body, html {
+    width: 100vw;
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+    background-color: black;
+  }
 
   @keyframes move {
     0% { transform: rotateY(0deg) }
