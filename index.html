@@ -1,42 +1,51 @@
-<main>
-  <h1><textarea data-gramm="false"
-    data-gramm_editor="false"
-    data-enable-grammarly="false"/></h1>
-</main>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>spin</title>
+    <meta name="description" content="type spinny text">
+  </head>
+  <body>
+    <main>
+      <h1><textarea data-gramm="false"
+        data-gramm_editor="false"
+        data-enable-grammarly="false"/></h1>
+    </main>
 
-<style>
+    <style>
 
-  body, html {
-    width: 100vw;
-    height: 100vh;
-    padding: 0;
-    margin: 0;
-    background-color: black;
-  }
+      body, html {
+        width: 100vw;
+        height: 100vh;
+        padding: 0;
+        margin: 0;
+        background-color: black;
+      }
 
-  @keyframes move {
-    0% { transform: rotateY(0deg) }
-    50% { transform: rotateY(180deg) }
-    100% { transform: rotateY(360deg) }
-  }
+      @keyframes move {
+        0% { transform: rotateY(0deg) }
+        50% { transform: rotateY(180deg) }
+        100% { transform: rotateY(360deg) }
+      }
 
-  h1 {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
+      h1 {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
 
-  textarea {
-    padding: 0;
-    margin: 0;
-    text-align: center;
-    font-size: 5rem;
-    border: none;
-    background-color: black;
-    outline: none;
-    color: white;
-    animation: move 5s linear infinite;
-    resize: none;
-  }
-</style>
+      textarea {
+        padding: 0;
+        margin: 0;
+        text-align: center;
+        font-size: 5rem;
+        border: none;
+        background-color: black;
+        outline: none;
+        color: white;
+        animation: move 5s linear infinite;
+        resize: none;
+      }
+    </style>
+  </body>
+</html>
