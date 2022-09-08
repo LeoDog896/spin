@@ -1,9 +1,13 @@
 {
   "scripts": {
-    "start": "parcel start index.html",
+    "start": "parcel index.html",
     "build": "parcel build index.html"
   },
   "devDependencies": {
+    "@types/three": "^0.144.0",
     "parcel": "^2.7.0"
+  },
+  "dependencies": {
+    "three": "^0.144.0"
   }
 }
