@@ -1,10 +1,95 @@
 <script lang="ts">
   import * as THREE from "three"
-  import type { Mesh, MeshPhongMaterial } from "three";
   import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
   import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
   import font from "$lib/droid-sans.json"
   import { onMount } from "svelte";
+
+  let scene: THREE.Scene | null;
+  let camera: THREE.Camera | null;
+  let content = "spin";
+  let rotation = 0;
+
+  let text: {
+    mesh?: THREE.Mesh<TextGeometry, THREE.MeshPhongMaterial>,
+    boundCollision?: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>
+    active: boolean,
+    cursor: { from: number, to: number }
+  } = { active: false, cursor: { from: 0, to: 0 } };  
+
+  function redo_move() {
+    camera?.lookAt(text.mesh!.position)
+  }
+
+  function createText(content: string) {
+    if (!scene) return
+
+    if (text.mesh && scene.children.includes(text.mesh)) {
+      scene.remove(text.mesh)
+    }
+
+    if (text.boundCollision && scene.children.includes(text.boundCollision)) {
+      scene.remove(text.boundCollision)
+    }
+
+    const textGeometry = new TextGeometry(content, {
+      font: new FontLoader().parse(font),
+      size: 70,
+      height: 20,
+      curveSegments: 2,
+      bevelEnabled: true,
+      bevelThickness: 2,
+      bevelSize: 1.5,
+      bevelOffset: 0,
+      bevelSegments: 2
+    })
+
+    text.cursor = { from: content.length - 1, to: content.length - 1 }
+
+    textGeometry.computeBoundingBox();
+
+    // Move transform origin to center
+    {
+      const center = textGeometry.boundingBox!.getCenter(new THREE.Vector3( ));
+      textGeometry.translate(-center.x, -center.y, -center.z)
+    }
+
+    // mesh creation
+    {
+      const material = new THREE.MeshPhongMaterial( { color: 0xffffff, flatShading: true } );
+      text.mesh = new THREE.Mesh( textGeometry, material );
+      text.mesh.translateY(150);
+      scene.add( text.mesh );
+    }
+
+    // Compute and add invisible bounding box to scene for detection
+    {
+      const textBoundingBoxSize = textGeometry.boundingBox!.getSize(new THREE.Vector3());
+      const geometry = new THREE.BoxGeometry(
+        textBoundingBoxSize.x,
+        textBoundingBoxSize.y,
+        textBoundingBoxSize.z
+      );
+      const material = new THREE.MeshBasicMaterial({
+        color: 0x00ff00,
+        wireframe: true,
+        visible: settings.debug
+      });
+
+      text.boundCollision = new THREE.Mesh(
+        geometry,
+        material
+      )
+
+      scene.add(text.boundCollision)
+
+      text.boundCollision!.position.copy(text.mesh!.position);
+    }
+
+    redo_move()
+  }
+
+  $: createText(content)
 
   interface Settings {
     debug: boolean;
@@ -16,17 +101,9 @@
   }
 
   onMount(() => {
-    const scene = new THREE.Scene();
+    scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 1500 );
     const renderer = new THREE.WebGLRenderer();
-
-    let text: {
-      content: string,
-      mesh?: Mesh<TextGeometry, MeshPhongMaterial>,
-      boundCollision?: Mesh
-      active: boolean,
-      cursor: { from: number, to: number }
-    } = { content: "spin", active: false, cursor: { from: 0, to: 0 } };
 
     // scene setup
     {
@@ -52,70 +129,24 @@
 
       // text
       (function() {
-        const textGeometry = new TextGeometry(text.content, {
-          font: new FontLoader().parse(font),
-          size: 70,
-          height: 20,
-          curveSegments: 12,
-          bevelEnabled: true,
-          bevelThickness: 2,
-          bevelSize: 1.5,
-          bevelOffset: 0,
-          bevelSegments: 5
+        createText(content)
+
+        window.addEventListener("keydown", event => {
+          switch (event.key) {
+            case "Backspace":
+              content = content.replace(/.$/, ''); // TODO i think theres an easier way
+              break;
+            default:
+              if (event.key.length === 1)
+                content += event.key;
+          }
         })
-
-        text.cursor = { from: text.content.length - 1, to: text.content.length - 1 }
-
-        textGeometry.computeBoundingBox();
-
-        // Move transform origin to center
-        {
-          const center = textGeometry.boundingBox!.getCenter(new THREE.Vector3( ));
-          textGeometry.translate(-center.x, -center.y, -center.z)
-        }
-
-        // mesh creation
-        {
-          const material = new THREE.MeshPhongMaterial( { color: 0xffffff, flatShading: true } );
-          text.mesh = new THREE.Mesh( textGeometry, material );
-          text.mesh.translateY(150);
-          scene.add( text.mesh );
-        }
-
-        // declared here so when typing we can move it during typing & window resize
-        function redo_move() {
-          camera.lookAt(text.mesh!.position)
-        }
-
-        // Compute and add invisible bounding box to scene for detection
-        {
-
-          const textBoundingBoxSize = textGeometry.boundingBox!.getSize(new THREE.Vector3());
-          const geometry = new THREE.BoxGeometry(
-            textBoundingBoxSize.x,
-            textBoundingBoxSize.y,
-            textBoundingBoxSize.z
-          );
-          const material = new THREE.MeshBasicMaterial({
-            color: 0x00ff00,
-            wireframe: true,
-            visible: settings.debug
-          });
-
-          text.boundCollision = new THREE.Mesh(
-            geometry,
-            material
-          )
-
-          scene.add(text.boundCollision)
-
-          text.boundCollision!.position.copy(text.mesh!.position);
-        }
 
         return {
           animate() {
-            text.mesh!.rotation.y += 0.01;
-            text.boundCollision!.rotation.y += 0.01;
+            rotation += 0.01;
+            text.mesh!.rotation.y = rotation;
+            text.boundCollision!.rotation.y = rotation;
 
             text.mesh!.material.color.set(text.active ? 0xff0000 : 0xffffff)
           },
@@ -145,7 +176,7 @@
             // calculate objects intersecting the picking ray.
             const intersects = raycaster.intersectObject( text.boundCollision! );
             text.active = intersects.length !== 0;
-            renderer.render( scene, camera );
+            renderer.render( scene!, camera );
           })
 
           window.addEventListener( 'click', function() {
@@ -154,7 +185,7 @@
             // calculate objects intersecting the picking ray.
             const intersects = raycaster.intersectObject( text.boundCollision! );
             text.active = intersects.length !== 0 ? !text.active : false
-            renderer.render( scene, camera );
+            renderer.render( scene!, camera );
           })
         }
 
@@ -170,7 +201,7 @@
         if (it!.resize) window.addEventListener("resize", it!.resize)
       }) // run every component that returns a render function
 
-      renderer.render( scene, camera );
+      renderer.render( scene!, camera );
     };
 
     animate();
