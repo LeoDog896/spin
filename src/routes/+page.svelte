@@ -5,11 +5,16 @@
   import font from "$lib/droid-sans.json"
   import { onMount } from "svelte";
 
-  let scene: THREE.Scene | null;
+  let scene = new THREE.Scene();
   let camera: THREE.PerspectiveCamera | null;
   let renderer: THREE.Renderer | null;
   let content = "spin"
   let rotation = 0;
+
+  $: {
+    if (text.mesh) text.mesh.rotation.y = rotation;
+    if (text.boundCollision) text.boundCollision.rotation.y = rotation;
+  }
 
   let text: {
     mesh?: THREE.Mesh<TextGeometry, THREE.MeshPhongMaterial>,
@@ -40,7 +45,7 @@
       bevelThickness: 10,
       bevelSize: 6.5,
       bevelOffset: 0,
-      bevelSegments: 2
+      bevelSegments: 2,
     })
 
     text.cursor = { from: content.length - 1, to: content.length - 1 }
@@ -65,6 +70,7 @@
     {
       const material = new THREE.MeshPhongMaterial( { color: 0xffffff } );
       text.mesh = new THREE.Mesh( textGeometry, material );
+      text.mesh.rotation.y = rotation;
       text.mesh.translateY(150);
       scene.add( text.mesh );
     }
@@ -88,6 +94,8 @@
         material
       )
 
+      text.boundCollision.rotation.y = rotation;
+
       scene.add(text.boundCollision)
 
       text.boundCollision!.position.copy(text.mesh!.position);
@@ -108,7 +116,6 @@
   }
 
   onMount(() => {
-    scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 1500 );
     renderer = new THREE.WebGLRenderer();
 
@@ -123,12 +130,12 @@
     // light
     {
       const dirLight = new THREE.DirectionalLight( 0xffffff, 0.125 );
-        dirLight.position.set( 0, 0, 1 ).normalize();
-        scene.add( dirLight );
+      dirLight.position.set( 0, 0, 1 ).normalize();
+      scene.add( dirLight );
 
-        const pointLight = new THREE.PointLight( 0xffffff, 1.5 );
-        pointLight.position.set( 0, 100, 90 );
-        scene.add( pointLight );
+      const pointLight = new THREE.PointLight( 0xffffff, 1.5 );
+      pointLight.position.set( 0, 100, 90 );
+      scene.add( pointLight );
     }
 
     // raycast
@@ -183,8 +190,6 @@
       requestAnimationFrame( animate );
 
       rotation += 0.01;
-      text.mesh!.rotation.y = rotation;
-      text.boundCollision!.rotation.y = rotation;
 
       text.mesh!.material.color.set(text.active ? 0xff0000 : 0xffffff)
       window.addEventListener("resize", redo_move)
