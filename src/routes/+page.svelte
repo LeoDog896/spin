@@ -4,18 +4,21 @@
   import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
   import font from "$lib/droid-sans.json"
   import { onMount } from "svelte";
-  import Settings from "$lib/Settings.svelte"
+  import Settings, { type Setting } from "$lib/Settings.svelte"
 
   let scene = new THREE.Scene();
   let camera: THREE.PerspectiveCamera | null;
   let renderer: THREE.Renderer | null;
   let content = "spin"
   let rotation = 0;
+  let settings: Setting = { debug: false }
 
   $: {
     if (text.mesh) text.mesh.rotation.y = rotation;
     if (text.boundCollision) text.boundCollision.rotation.y = rotation;
   }
+
+  $: if (text.boundCollision) text.boundCollision.material.visible = settings.debug
 
   let text: {
     mesh?: THREE.Mesh<TextGeometry, THREE.MeshStandardMaterial>,
@@ -107,15 +110,6 @@
 
   $: createText(content)
 
-  interface Settings {
-    debug: boolean;
-  }
-
-  // TODO: User's custom settings
-  const settings: Settings = {
-    debug: true
-  }
-
   onMount(() => {
     camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 1500 );
     renderer = new THREE.WebGLRenderer();
@@ -202,4 +196,4 @@
   });
 </script>
 
-<Settings/>
+<Settings bind:settings/>
