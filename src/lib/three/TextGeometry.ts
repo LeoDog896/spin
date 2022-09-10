@@ -9,8 +9,10 @@ export interface TextGeometrySettings {
   depth?: number;
   bevelThickness?: number;
   bevelSize?: number;
+  bevelOffset?: number;
   bevelEnabled?: boolean;
   size?: number;
+  curveSegments?: number;
   font: Font;
 }
 
@@ -18,28 +20,22 @@ export class TextGeometry extends ExtrudeGeometry {
 
 	constructor( text: string, parameters: TextGeometrySettings ) {
 
-		const font = parameters.font;
+		const setParameters = {
+			height: 50,
+			depth: 50,
+			bevelThickness: 10,
+			bevelSize: 8,
+			bevelEnabled: false,
+			...parameters
+		}
+
+		const font = setParameters.font;
 
 		if ( font === undefined ) {
-
 			super(); // generate default extrude geometry
-
 		} else {
-
-			const shapes = font.generateShapes( text, parameters.size );
-
-			// translate parameters to ExtrudeGeometry API
-
-			parameters.depth = parameters.height !== undefined ? parameters.height : 50;
-
-			// defaults
-
-			if ( parameters.bevelThickness === undefined ) parameters.bevelThickness = 10;
-			if ( parameters.bevelSize === undefined ) parameters.bevelSize = 8;
-			if ( parameters.bevelEnabled === undefined ) parameters.bevelEnabled = false;
-
-			super( shapes, parameters );
-
+			const shapes = font.generateShapes( text, setParameters.size );
+			super( shapes, setParameters );
 		}
 
 		this.type = 'TextGeometry';
