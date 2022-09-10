@@ -43,7 +43,7 @@
 		const textGeometry = new TextGeometry(content, {
 			font: fontGen,
 			size: 70,
-			height: 20,
+      depth: 15,
 			curveSegments: 2,
 			bevelEnabled: true,
 			bevelThickness: 10,
@@ -74,7 +74,7 @@
 
 		// mesh creation
 		{
-			const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+			const material = new THREE.MeshPhysicalMaterial({ color: 0xffffff });
 			text.mesh = new THREE.Mesh(textGeometry, material);
 			text.mesh.rotation.y = rotation;
 			text.mesh.translateY(150);
@@ -130,7 +130,7 @@
 			scene.add(dirLight);
 
 			const pointLight = new THREE.PointLight(0xffffff, 1.5);
-			pointLight.position.set(0, 100, 90);
+			pointLight.position.set(20, 100, 90);
 			scene.add(pointLight);
 		}
 
@@ -171,7 +171,7 @@
 			window.addEventListener('keydown', (event) => {
 				switch (event.key) {
 					case 'Backspace':
-						content = content.replace(/.$/, ''); // TODO i think theres an easier way
+						content = content.slice(0, -1);
 						break;
 					case 'Enter':
 						content += '\n';
