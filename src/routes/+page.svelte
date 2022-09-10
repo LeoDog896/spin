@@ -7,11 +7,13 @@
 	import Settings, { type Setting } from '$lib/Settings.svelte';
 
 	let scene = new THREE.Scene();
+	scene.fog = new THREE.FogExp2(0xaaaaaa, 0.001);
+
 	let camera: THREE.PerspectiveCamera | null;
-	let renderer: THREE.Renderer | null;
+	let renderer: THREE.WebGLRenderer | null;
 	let content = 'spin';
 	let rotation = 0;
-	let settings: Setting = { debug: false };
+	let settings: Setting = { debug: false, toon: false };
 
 	$: {
 		if (text.mesh) text.mesh.rotation.y = rotation;
@@ -21,7 +23,7 @@
 	$: if (text.boundCollision) text.boundCollision.material.visible = settings.debug;
 
 	let text: {
-		mesh?: THREE.Mesh<TextGeometry, THREE.MeshStandardMaterial>;
+		mesh?: THREE.Mesh<TextGeometry, THREE.MeshToonMaterial | THREE.MeshPhysicalMaterial>;
 		boundCollision?: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>;
 		active: boolean;
 		cursor: { from: number; to: number };
@@ -36,14 +38,35 @@
 		camera?.lookAt(text.mesh.position);
 	}
 
+	function textMaterial(settings: Settings) {
+		if (!renderer) return;
+		if (settings.toon) {
+			const colors = new Uint8Array(5);
+			for (let c = 0; c <= colors.length; c++) {
+				colors[c] = (c / colors.length) * 256;
+			}
+
+			const gradientMap = new THREE.DataTexture(
+				colors,
+				colors.length,
+				1,
+				renderer.capabilities.isWebGL2 ? THREE.RedFormat : THREE.LuminanceFormat
+			);
+			gradientMap.needsUpdate = true;
+			return new THREE.MeshToonMaterial({ color: 0xffffff, gradientMap });
+		} else {
+			return new THREE.MeshPhysicalMaterial({ color: 0xffffff });
+		}
+	}
+
 	const fontGen = new Font(font);
-	function createText(content: string) {
+	function createText(content: string, settings: Settings) {
 		if (!scene) return;
 
 		const textGeometry = new TextGeometry(content, {
 			font: fontGen,
 			size: 70,
-      depth: 15,
+			depth: 15,
 			curveSegments: 2,
 			bevelEnabled: true,
 			bevelThickness: 10,
@@ -74,8 +97,7 @@
 
 		// mesh creation
 		{
-			const material = new THREE.MeshPhysicalMaterial({ color: 0xffffff });
-			text.mesh = new THREE.Mesh(textGeometry, material);
+			text.mesh = new THREE.Mesh(textGeometry, textMaterial(settings));
 			text.mesh.rotation.y = rotation;
 			text.mesh.translateY(150);
 			scene.add(text.mesh);
@@ -89,13 +111,15 @@
 				textBoundingBoxSize.y,
 				textBoundingBoxSize.z
 			);
-			const material = new THREE.MeshBasicMaterial({
-				color: 0x00ff00,
-				wireframe: true,
-				visible: settings.debug
-			});
 
-			text.boundCollision = new THREE.Mesh(geometry, material);
+			text.boundCollision = new THREE.Mesh(
+				geometry,
+				new THREE.MeshBasicMaterial({
+					color: 0x00ff00,
+					wireframe: true,
+					visible: settings.debug
+				})
+			);
 
 			text.boundCollision.rotation.y = rotation;
 
@@ -109,7 +133,7 @@
 		redo_move();
 	}
 
-	$: createText(content);
+	$: createText(content, settings);
 
 	onMount(() => {
 		camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 1500);
@@ -164,23 +188,19 @@
 			});
 		}
 
-		// text
-		{
-			createText(content);
-
-			window.addEventListener('keydown', (event) => {
-				switch (event.key) {
-					case 'Backspace':
-						content = content.slice(0, -1);
-						break;
-					case 'Enter':
-						content += '\n';
-						break;
-					default:
-						if (event.key.length === 1) content += event.key;
-				}
-			});
-		}
+		// input
+		window.addEventListener('keydown', (event) => {
+			switch (event.key) {
+				case 'Backspace':
+					content = content.slice(0, -1);
+					break;
+				case 'Enter':
+					content += '\n';
+					break;
+				default:
+					if (event.key.length === 1) content += event.key;
+			}
+		});
 
 		function animate() {
 			if (!renderer || !camera || !text.mesh) return;
