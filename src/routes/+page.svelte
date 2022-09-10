@@ -4,6 +4,7 @@
   import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
   import font from "$lib/droid-sans.json"
   import { onMount } from "svelte";
+  import Settings from "$lib/Settings.svelte"
 
   let scene = new THREE.Scene();
   let camera: THREE.PerspectiveCamera | null;
@@ -17,7 +18,7 @@
   }
 
   let text: {
-    mesh?: THREE.Mesh<TextGeometry, THREE.MeshPhongMaterial>,
+    mesh?: THREE.Mesh<TextGeometry, THREE.MeshStandardMaterial>,
     boundCollision?: THREE.Mesh<THREE.BoxGeometry, THREE.MeshBasicMaterial>
     active: boolean,
     cursor: { from: number, to: number }
@@ -68,7 +69,7 @@
 
     // mesh creation
     {
-      const material = new THREE.MeshPhongMaterial( { color: 0xffffff } );
+      const material = new THREE.MeshStandardMaterial( { color: 0xffffff } );
       text.mesh = new THREE.Mesh( textGeometry, material );
       text.mesh.rotation.y = rotation;
       text.mesh.translateY(150);
@@ -200,3 +201,5 @@
     animate();
   });
 </script>
+
+<Settings/>
