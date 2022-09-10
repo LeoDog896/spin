@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as THREE from "three"
-  import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
-  import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+  import { TextGeometry } from '$lib/three/TextGeometry';
+  import { Font } from '$lib/three/FontLoader';
   import font from "$lib/droid-sans.json"
   import { onMount } from "svelte";
   import Settings, { type Setting } from "$lib/Settings.svelte"
@@ -36,7 +36,7 @@
     camera?.lookAt(text.mesh!.position)
   }
 
-  const fontGen = new FontLoader().parse(font);
+  const fontGen = new Font(font);
   function createText(content: string) {
     if (!scene) return
 
