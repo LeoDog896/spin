@@ -5,13 +5,14 @@
 	import font from '$lib/droid-sans.json';
 	import { onMount } from 'svelte';
 	import Settings, { type Setting } from '$lib/Settings.svelte';
+	import { localStore } from "svelte-persistent"
 
 	let scene = new THREE.Scene();
 	scene.fog = new THREE.FogExp2(0xaaaaaa, 0.001);
 
 	let camera: THREE.PerspectiveCamera | null;
 	let renderer: THREE.WebGLRenderer | null;
-	let content = 'spin';
+	let content = localStore('content', 'spin');
 	let rotation = 0;
 	let settings: Setting = { debug: false, toon: false };
 
@@ -133,7 +134,7 @@
 		redo_move();
 	}
 
-	$: createText(content, settings);
+	$: createText($content, settings);
 
 	onMount(() => {
 		camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 1500);
@@ -192,13 +193,13 @@
 		window.addEventListener('keydown', (event) => {
 			switch (event.key) {
 				case 'Backspace':
-					content = content.slice(0, -1);
+					$content = $content.slice(0, -1);
 					break;
 				case 'Enter':
-					content += '\n';
+					$content += '\n';
 					break;
 				default:
-					if (event.key.length === 1) content += event.key;
+					if (event.key.length === 1) $content += event.key;
 			}
 		});
 
