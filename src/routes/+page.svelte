@@ -6,6 +6,8 @@
 	import { onMount } from 'svelte';
 	import Settings, { type Setting } from '$lib/Settings.svelte';
 	import { localStore } from "svelte-persistent"
+	import writableDerived from "svelte-writable-derived";
+	import type { Writable } from 'svelte/store';
 
 	let scene = new THREE.Scene();
 	scene.fog = new THREE.FogExp2(0xaaaaaa, 0.001);
@@ -13,12 +15,13 @@
 	let camera: THREE.PerspectiveCamera | null;
 	let renderer: THREE.WebGLRenderer | null;
 	let content = localStore('content', 'spin');
-	let rotation = 0;
+	let rotation: Writable<number[]> = writableDerived(localStore('rotation', '[0, 0, 0]'), json => JSON.parse(json), obj => JSON.stringify(obj)); // x, y, z
 	let settings: Setting = { debug: false, toon: false };
+	let pointer = new THREE.Vector2();
 
 	$: {
-		if (text.mesh) text.mesh.rotation.y = rotation;
-		if (text.boundCollision) text.boundCollision.rotation.y = rotation;
+		if (text.mesh) text.mesh.rotation.fromArray($rotation);
+		if (text.boundCollision) text.boundCollision.rotation.fromArray($rotation);
 	}
 
 	$: if (text.boundCollision) text.boundCollision.material.visible = settings.debug;
@@ -99,7 +102,7 @@
 		// mesh creation
 		{
 			text.mesh = new THREE.Mesh(textGeometry, textMaterial(settings));
-			text.mesh.rotation.y = rotation;
+			text.mesh.rotation.fromArray($rotation);
 			text.mesh.translateY(150);
 			scene.add(text.mesh);
 		}
@@ -122,7 +125,7 @@
 				})
 			);
 
-			text.boundCollision.rotation.y = rotation;
+			text.boundCollision.rotation.fromArray($rotation);
 
 			scene.add(text.boundCollision);
 
@@ -162,7 +165,6 @@
 		// raycast
 		{
 			const raycaster = new THREE.Raycaster();
-			const pointer = new THREE.Vector2();
 
 			window.addEventListener('pointermove', function (event) {
 				// calculate pointer position in normalized device coordinates
@@ -189,29 +191,13 @@
 			});
 		}
 
-		// input
-		window.addEventListener('keydown', (event) => {
-			switch (event.key) {
-				case 'Backspace':
-					$content = $content.slice(0, -1);
-					break;
-				case 'Enter':
-					$content += '\n';
-					break;
-				default:
-					if (event.key.length === 1) $content += event.key;
-			}
-		});
-
 		function animate() {
-			if (!renderer || !camera || !text.mesh) return;
 			requestAnimationFrame(animate);
+			if (!renderer || !camera || !text.mesh) return;
 
-			rotation += 0.01;
+			$rotation[1] += 0.01;
 
 			text.mesh.material.color.set(text.active ? 0xff0000 : 0xffffff);
-			window.addEventListener('resize', redo_move);
-
 			renderer.render(scene, camera);
 		}
 
@@ -219,4 +205,19 @@
 	});
 </script>
 
+<svelte:window on:keydown={event => {
+	switch (event.key) {
+		case 'Backspace':
+			$content = $content.slice(0, -1);
+			break;
+		case 'Enter':
+			$content += '\n';
+			break;
+		default:
+			if (event.key.length === 1) $content += event.key;
+	}
+}}
+
+on:resize={redo_move}
+></svelte:window>
 <Settings bind:settings />
