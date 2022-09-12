@@ -2,17 +2,24 @@
 	export interface Setting {
 		debug: boolean;
 		toon: boolean;
+    color: number;
 	}
 </script>
 
 <script lang="ts">
+  import { HsvPicker } from 'svelte-color-picker';
 	import { fly } from 'svelte/transition';
   import { localStore } from "svelte-persistent"
+
+  function componentToHex(c: number) {
+    const hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+  }
 
   export let content = localStore('content', 'spin');
 	let modalShowing = false;
 
-	export let settings: Setting = { debug: false, toon: false };
+	export let settings: Setting = { debug: false, toon: false, color: 0xffffff };
 </script>
 
 <svelte:window on:click|self={() => (modalShowing = false)} />
@@ -27,6 +34,9 @@
 			<p>Debug: <input type="checkbox" bind:checked={settings.debug} /></p>
 			<p>Toon: <input type="checkbox" bind:checked={settings.toon} /></p>
       <textarea bind:value={$content}></textarea>
+      <HsvPicker on:colorChange={({ detail }) => {
+        settings.color = (detail.r << 16) + (detail.g << 8) + (detail.b);
+      }}/>
 		</div>
 	</div>
 {/if}

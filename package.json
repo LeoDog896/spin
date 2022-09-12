@@ -28,6 +28,7 @@
 		"prettier-plugin-svelte": "^2.7.0",
 		"svelte": "^3.44.0",
 		"svelte-check": "^2.7.1",
+		"svelte-color-picker": "^1.0.7",
 		"svelte-persistent": "^0.0.1",
 		"svelte-preprocess": "^4.10.7",
 		"svelte-writable-derived": "^2.1.5",

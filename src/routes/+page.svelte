@@ -17,7 +17,7 @@
 	let rotation: Writable<number[]> = writableDerived(localStore('rotation', '[0, 0, 0]'), json => JSON.parse(json), obj => JSON.stringify(obj)); // x, y, z
 	let settings: Setting = { debug: false, toon: false };
 	let pointer = new THREE.Vector2();
-  let renderDiv: HTMLDivElement
+  let renderDiv: HTMLDivElement;
   let content = localStore("content", "spin")
 
 	$: {
@@ -198,7 +198,7 @@
 
 			$rotation[1] += 0.01;
 
-			text.mesh.material.color.set(text.active ? 0xff0000 : 0xffffff);
+			text.mesh.material.color.set(settings.color);
 			renderer.render(scene, camera);
 		}
 
