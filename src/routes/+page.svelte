@@ -14,10 +14,11 @@
 
 	let camera: THREE.PerspectiveCamera | null;
 	let renderer: THREE.WebGLRenderer | null;
-	let content = localStore('content', 'spin');
 	let rotation: Writable<number[]> = writableDerived(localStore('rotation', '[0, 0, 0]'), json => JSON.parse(json), obj => JSON.stringify(obj)); // x, y, z
 	let settings: Setting = { debug: false, toon: false };
 	let pointer = new THREE.Vector2();
+  let renderDiv: HTMLDivElement
+  let content = localStore("content", "spin")
 
 	$: {
 		if (text.mesh) text.mesh.rotation.fromArray($rotation);
@@ -148,7 +149,7 @@
 			camera.position.set(0, 400, 700);
 			camera.lookAt(new THREE.Vector3(0, 150, 0));
 			renderer.setSize(window.innerWidth, window.innerHeight);
-			document.body.appendChild(renderer.domElement);
+			renderDiv.appendChild(renderer.domElement);
 		}
 
 		// light
@@ -166,13 +167,13 @@
 		{
 			const raycaster = new THREE.Raycaster();
 
-			window.addEventListener('pointermove', function (event) {
+			renderDiv.addEventListener('pointermove', function (event) {
 				// calculate pointer position in normalized device coordinates
 				// (-1 to +1) for both components
 				pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
 				pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
 			});
-			window.addEventListener('dblclick', function () {
+			renderDiv.addEventListener('dblclick', function () {
 				if (!text.boundCollision || !camera || !renderer) return;
 				raycaster.setFromCamera(pointer, camera);
 				// calculate objects intersecting the picking ray.
@@ -181,7 +182,7 @@
 				renderer.render(scene, camera);
 			});
 
-			window.addEventListener('click', function () {
+			renderDiv.addEventListener('click', function () {
 				if (!text.boundCollision || !camera || !renderer) return;
 				raycaster.setFromCamera(pointer, camera);
 				// calculate objects intersecting the picking ray.
@@ -205,7 +206,7 @@
 	});
 </script>
 
-<svelte:window on:keydown={event => {
+<div class="render" bind:this={renderDiv} on:keydown={event => {
 	switch (event.key) {
 		case 'Backspace':
 			$content = $content.slice(0, -1);
@@ -219,5 +220,5 @@
 }}
 
 on:resize={redo_move}
-></svelte:window>
-<Settings bind:settings />
+></div>
+<Settings bind:settings bind:content />
