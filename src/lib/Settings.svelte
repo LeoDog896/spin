@@ -34,7 +34,7 @@
 			<p>Debug: <input type="checkbox" bind:checked={settings.debug} /></p>
 			<p>Toon: <input type="checkbox" bind:checked={settings.toon} /></p>
       <textarea bind:value={$content}></textarea>
-      <HsvPicker on:colorChange={({ detail }) => {
+      <HsvPicker startColor="#ffffff" on:colorChange={({ detail }) => {
         settings.color = (detail.r << 16) + (detail.g << 8) + (detail.b);
       }}/>
 		</div>
