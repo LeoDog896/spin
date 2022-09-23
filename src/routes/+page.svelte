@@ -15,7 +15,7 @@
 	let camera: THREE.PerspectiveCamera | null;
 	let renderer: THREE.WebGLRenderer | null;
 	let rotation: Writable<number[]> = writableDerived(localStore('rotation', '[0, 0, 0]'), json => JSON.parse(json), obj => JSON.stringify(obj)); // x, y, z
-	let settings: Setting = { debug: false, toon: false };
+	let settings: Setting = { debug: false, toon: false, color: 0xffffff };
 	let pointer = new THREE.Vector2();
   let renderDiv: HTMLDivElement;
   let content = localStore("content", "spin")
