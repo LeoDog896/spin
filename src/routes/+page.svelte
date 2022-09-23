@@ -206,7 +206,7 @@
 	});
 </script>
 
-<div class="render" bind:this={renderDiv} on:keydown={event => {
+<div tabindex=0 on:keydown={event => {
 	switch (event.key) {
 		case 'Backspace':
 			$content = $content.slice(0, -1);
@@ -217,8 +217,5 @@
 		default:
 			if (event.key.length === 1) $content += event.key;
 	}
-}}
-
-on:resize={redo_move}
-></div>
+}} class="render" bind:this={renderDiv} on:resize={redo_move}></div>
 <Settings bind:settings bind:content />
