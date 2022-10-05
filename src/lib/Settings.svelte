@@ -30,7 +30,7 @@
 {#if modalShowing}
 	<div
 		transition:fly={{ x: -200 }}
-		class="fixed rounded-lg p-4 pl-20 top-0 left-0 w-[calc(100vw - 1.5rem)] h-[100vh-2rem] bg-gray-600/70 text-white p-8"
+		class="fixed rounded-r-lg p-4 pl-20 top-0 left-0 w-[calc(100vw - 1.5rem)] h-screen bg-gray-600/70 text-white p-8"
 		on:click|self={() => (modalShowing = false)}
 	>
     <div>
