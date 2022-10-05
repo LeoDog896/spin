@@ -26,7 +26,7 @@ export class Font {
 }
 
 function createPaths(text: string, size: number, data: any) {
-	const chars = Array.from(text);
+	const chars = [...text];
 	const scale = size / data.resolution;
 	const line_height =
 		(data.boundingBox.yMax - data.boundingBox.yMin + data.underlineThickness) * scale;

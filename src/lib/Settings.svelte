@@ -47,7 +47,7 @@
 
 <button
 	on:click={() => (modalShowing = !modalShowing)}
-	class="fixed z-10 top-8 left-8 rounded-full p-4 hover:ring-lime-500 ring-offset-2 ring transition-all"
+	class="fixed z-10 top-8 left-8 rounded-full p-4 border-4 border-white hover:scale-125 transition-all"
 />
 
 <style>

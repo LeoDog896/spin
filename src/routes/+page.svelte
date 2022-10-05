@@ -217,6 +217,7 @@
 			$content += '\n';
 			break;
 		default:
+      // we can avoid any weird keys by checking the length.
 			if (event.key.length === 1) $content += event.key;
 	}
 }} class="render" bind:this={renderDiv}></div>
