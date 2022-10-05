@@ -4,18 +4,18 @@
 	import { Font } from '$lib/three/FontLoader';
 	import font from '$lib/droid-sans.json';
 	import { onMount } from 'svelte';
-	import Settings, { type Setting } from '$lib/Settings.svelte';
+	import Settings, { type Setting as SpinSetting } from '$lib/Settings.svelte';
 	import { localStore } from "svelte-persistent"
 	import writableDerived from "svelte-writable-derived";
 	import type { Writable } from 'svelte/store';
 
 	let scene = new THREE.Scene();
-	scene.fog = new THREE.FogExp2(0xaaaaaa, 0.001);
+	$: scene.fog = settings.fog ? new THREE.FogExp2(0xaaaaaa, 0.001) : null;
 
 	let camera: THREE.PerspectiveCamera | null;
 	let renderer: THREE.WebGLRenderer | null;
 	let rotation: Writable<number[]> = writableDerived(localStore('rotation', '[0, 0, 0]'), json => JSON.parse(json), obj => JSON.stringify(obj)); // x, y, z
-	let settings: Setting = { debug: false, toon: false, color: 0xffffff };
+	let settings: SpinSetting = { debug: false, toon: false, fog: true, color: 0xffffff, opacity: 1 };
 	let pointer = new THREE.Vector2();
   let renderDiv: HTMLDivElement;
   let content = localStore("content", "spin")
@@ -43,7 +43,7 @@
 		camera?.lookAt(text.mesh.position);
 	}
 
-	function textMaterial(settings: Settings) {
+	function textMaterial(settings: SpinSetting) {
 		if (!renderer) return;
 		if (settings.toon) {
 			const colors = new Uint8Array(5);
@@ -58,14 +58,14 @@
 				renderer.capabilities.isWebGL2 ? THREE.RedFormat : THREE.LuminanceFormat
 			);
 			gradientMap.needsUpdate = true;
-			return new THREE.MeshToonMaterial({ color: 0xffffff, gradientMap });
+			return new THREE.MeshToonMaterial({ color: 0xffffff, gradientMap, opacity: settings.opacity });
 		} else {
-			return new THREE.MeshPhysicalMaterial({ color: 0xffffff });
+			return new THREE.MeshPhysicalMaterial({ color: 0xffffff, opacity: settings.opacity });
 		}
 	}
 
 	const fontGen = new Font(font);
-	function createText(content: string, settings: Settings) {
+	function createText(content: string, settings: SpinSetting) {
 		if (!scene) return;
 
 		const textGeometry = new TextGeometry(content, {
