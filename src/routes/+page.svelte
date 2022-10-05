@@ -206,6 +206,8 @@
 	});
 </script>
 
+<svelte:window on:resize={redo_move}></svelte:window>
+
 <div tabindex=0 on:keydown={event => {
 	switch (event.key) {
 		case 'Backspace':
@@ -217,5 +219,5 @@
 		default:
 			if (event.key.length === 1) $content += event.key;
 	}
-}} class="render" bind:this={renderDiv} on:resize={redo_move}></div>
+}} class="render" bind:this={renderDiv}></div>
 <Settings bind:settings bind:content />
