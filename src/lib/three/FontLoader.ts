@@ -1,11 +1,30 @@
-import { ShapePath } from 'three';
+import { ShapePath, Shape } from 'three';
+
+interface FontData {
+  glyphs: { [key: string] : {
+    x_min: number;
+    x_max: number;
+    ha: number;
+    o: string;
+    _cachedOutline?: string[];
+  } };
+  resolution: number;
+  boundingBox: {
+    yMin: number;
+    yMax: number;
+    xMin: number;
+    xMax: number;
+  }
+  underlineThickness: number;
+  familyName: string;
+}
 
 export class Font {
 	isFont: boolean;
 	type: string;
-	data: any;
+	data: FontData;
 
-	constructor(data: any) {
+	constructor(data: FontData) {
 		this.isFont = true;
 
 		this.type = 'Font';
@@ -13,11 +32,11 @@ export class Font {
 		this.data = data;
 	}
 
-	generateShapes(text: string, size = 100) {
+	generateShapes(text: string, size = 100): Shape[] {
 		const shapes = [];
 		const paths = createPaths(text, size, this.data);
 
-		for (let p = 0, pl = paths.length; p < pl; p++) {
+		for (let p = 0; p < paths.length; p++) {
 			shapes.push(...paths[p].toShapes(false));
 		}
 
@@ -25,11 +44,11 @@ export class Font {
 	}
 }
 
-function createPaths(text: string, size: number, data: any) {
+function createPaths(text: string, size: number, data: FontData) {
 	const chars = [...text];
 	const scale = size / data.resolution;
 	const line_height =
-		(data.boundingBox.yMax - data.boundingBox.yMin + data.underlineThickness) * scale;
+		(data.boundingBox.yMax - data.boundingBox.yMin) * scale;
 
 	const paths = [];
 
@@ -52,7 +71,7 @@ function createPaths(text: string, size: number, data: any) {
 	return paths;
 }
 
-function createPath(char: string, scale: number, offsetX: number, offsetY: number, data: any) {
+function createPath(char: string, scale: number, offsetX: number, offsetY: number, data: FontData) {
 	const glyph = data.glyphs[char] || data.glyphs['?'];
 
 	if (!glyph) {
@@ -73,8 +92,8 @@ function createPath(char: string, scale: number, offsetX: number, offsetY: numbe
 				case 'm': {
 					// moveTo
 
-					const x = outline[i++] * scale + offsetX;
-					const y = outline[i++] * scale + offsetY;
+					const x = +outline[i++] * scale + offsetX;
+					const y = +outline[i++] * scale + offsetY;
 
 					path.moveTo(x, y);
 
@@ -83,8 +102,8 @@ function createPath(char: string, scale: number, offsetX: number, offsetY: numbe
 				case 'l': {
 					// lineTo
 
-					const x = outline[i++] * scale + offsetX;
-					const y = outline[i++] * scale + offsetY;
+					const x = +outline[i++] * scale + offsetX;
+					const y = +outline[i++] * scale + offsetY;
 
 					path.lineTo(x, y);
 
@@ -93,10 +112,10 @@ function createPath(char: string, scale: number, offsetX: number, offsetY: numbe
 				case 'q': {
 					// quadraticCurveTo
 
-					const cpx = outline[i++] * scale + offsetX;
-					const cpy = outline[i++] * scale + offsetY;
-					const cpx1 = outline[i++] * scale + offsetX;
-					const cpy1 = outline[i++] * scale + offsetY;
+					const cpx = +outline[i++] * scale + offsetX;
+					const cpy = +outline[i++] * scale + offsetY;
+					const cpx1 = +outline[i++] * scale + offsetX;
+					const cpy1 = +outline[i++] * scale + offsetY;
 
 					path.quadraticCurveTo(cpx1, cpy1, cpx, cpy);
 
@@ -105,12 +124,12 @@ function createPath(char: string, scale: number, offsetX: number, offsetY: numbe
 				case 'b': {
 					// bezierCurveTo
 
-					const cpx = outline[i++] * scale + offsetX;
-					const cpy = outline[i++] * scale + offsetY;
-					const cpx1 = outline[i++] * scale + offsetX;
-					const cpy1 = outline[i++] * scale + offsetY;
-					const cpx2 = outline[i++] * scale + offsetX;
-					const cpy2 = outline[i++] * scale + offsetY;
+					const cpx = +outline[i++] * scale + offsetX;
+					const cpy = +outline[i++] * scale + offsetY;
+					const cpx1 = +outline[i++] * scale + offsetX;
+					const cpy1 = +outline[i++] * scale + offsetY;
+					const cpx2 = +outline[i++] * scale + offsetX;
+					const cpy2 = +outline[i++] * scale + offsetY;
 
 					path.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, cpx, cpy);
 
