@@ -141,7 +141,7 @@
 	$: createText($content, settings);
 
 	onMount(() => {
-		camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 1500);
+		camera = new THREE.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 5500);
 		renderer = new THREE.WebGLRenderer();
 
 		// scene setup
